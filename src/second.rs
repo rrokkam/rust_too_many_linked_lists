@@ -1,13 +1,20 @@
-pub struct List {
-    head: Link,
+pub struct List<T> {
+    head: Link<T>,
 }
 
-impl List {
+type Link<T> = Option<Box<Node<T>>>;
+
+struct Node<T> {
+    elem: T,
+    next: Link<T>,
+}
+
+impl<T> List<T> {
     pub fn new() -> Self {
         List { head: None }
     }
 
-    pub fn push(&mut self, elem: i32) {
+    pub fn push(&mut self, elem: T) {
         let new_node = Box::new(Node {
             elem,
             next: self.head.take(),
@@ -16,21 +23,25 @@ impl List {
         self.head = Some(new_node);
     }
 
-    pub fn pop(&mut self) -> Option<i32> {
+    pub fn pop(&mut self) -> Option<T> {
         self.head.take().map(|node| {
             self.head = node.next;
             node.elem
         })
     }
+
+    pub fn peek(&self) -> Option<&T> {
+        self.head.as_ref().map(|node| &node.elem)
+    }
 }
 
-impl Default for List {
+impl<T> Default for List<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Drop for List {
+impl<T> Drop for List<T> {
     // Doing it this way (as opposed to while-let with pop()) avoids manipulating
     // the elem values, so they can be dropped in-place.
     fn drop(&mut self) {
@@ -41,21 +52,14 @@ impl Drop for List {
     }
 }
 
-type Link = Option<Box<Node>>;
-
-struct Node {
-    elem: i32,
-    next: Link,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_link_layout_optimization() {
-        let ptr_size = std::mem::size_of::<Box<Node>>();
-        let link_size = std::mem::size_of::<Link>();
+        let ptr_size = std::mem::size_of::<Box<Node<i32>>>();
+        let link_size = std::mem::size_of::<Link<i32>>();
         assert_eq!(link_size, ptr_size);
     }
 
