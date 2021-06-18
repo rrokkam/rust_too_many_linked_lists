@@ -1,9 +1,12 @@
+// This struct lives on the stack
 pub struct List<T> {
     head: Link<T>,
 }
 
+// Type alias to get sugar methods of Option and Box
 type Link<T> = Option<Box<Node<T>>>;
 
+// This struct lives on the heap, one per list element
 struct Node<T> {
     elem: T,
     next: Link<T>,
